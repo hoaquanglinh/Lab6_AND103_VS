@@ -183,12 +183,48 @@ app.put('/update-fruit/:id', upload.array('image', 5), async (req, res) => {
     try {
         const fruitId = req.params.id;
         const data = req.body;
-        const { files } = req;
+        const files = req.files;
 
         const urlsImage = files.map((file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`);
 
         const result = await fruits.findByIdAndUpdate(fruitId, {
             image: urlsImage,
+            name: data.name,
+            quantity: data.quantity,
+            price: data.price,
+            distributor: data.distributor,
+            description: data.description,
+        });
+
+        if (result) {
+            res.json({
+                "status": 200,
+                "messenger": "Cập nhật thành công",
+                "data": result
+            });
+        } else {
+            res.status(404).json({
+                "status": 404,
+                "messenger": "Không tìm thấy trái cây",
+                "data": []
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            "status": 500,
+            "messenger": "Lỗi, không thể cập nhật trái cây",
+            "data": []
+        });
+    }
+});
+
+app.put('/update-no-image/:id', upload.array('image', 5), async (req, res) => {
+    try {
+        const fruitId = req.params.id;
+        const data = req.body;
+
+        const result = await fruits.findByIdAndUpdate(fruitId, {
             name: data.name,
             quantity: data.quantity,
             price: data.price,
