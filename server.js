@@ -39,7 +39,7 @@ app.post('/add-fruits', upload.array('image', 5), async (req, res) => {
             name: data.name,
             quantity: data.quantity,
             price: data.price,     
-            distributor: data.distributor,     
+            distributor: data.distributor,       
             description: data.description, 
         });
         const result = (await newfruit.save()); 
@@ -152,10 +152,6 @@ app.post('/login', async (req, res) => {
     }
 })
 
-
-
-
-
 app.delete('/delete/:id', async (req, res) => {
     try {
         const id = req.params.id;
@@ -255,3 +251,66 @@ app.put('/update-no-image/:id', upload.array('image', 5), async (req, res) => {
     }
 });
 
+app.get('/search', async (req, res) => {
+    try {
+        const tuKhoa = req.query.key; 
+       
+        const ketQuaTimKiem = await fruits.find({ name: { $regex: new RegExp(tuKhoa, "i") } });
+
+        if (ketQuaTimKiem.length > 0) {
+            res.json(ketQuaTimKiem);
+        } else {
+            res.json([]);
+        }
+    } catch (error) {
+        res.status(500).send('Lỗi máy chủ nội bộ');
+    }
+})
+
+
+const sapxepgiamdan = (products) => {
+    return products.sort((a, b) => b.price - a.price);
+}
+
+app.get('/giam-dan', async (req, res) => {
+    try {
+        let cay = await fruits.find();
+        let sortedProducts = sapxepgiamdan(cay);
+        res.json(sortedProducts);
+    } catch (error) {
+        console.error('Lỗi khi sắp xếp danh sách sản phẩm theo giá tăng dần:', error);
+        res.status(500).send('Đã xảy ra lỗi khi sắp xếp danh sách sản phẩm');
+    }
+});
+
+const sapxeptangdan = (products) => {
+    return products.sort((a, b) => a.price - b.price);
+}
+
+app.get('/tang-dan', async (req, res) => {
+    try {
+        let cay = await fruits.find();
+        let sortedProducts = sapxeptangdan(cay);
+        res.json(sortedProducts);
+    } catch (error) {
+        console.error('Lỗi khi sắp xếp danh sách sản phẩm theo giá giảm dần:', error);
+        res.status(500).send('Đã xảy ra lỗi khi sắp xếp danh sách sản phẩm');
+    }
+});
+
+
+app.get('/search-gia', async (req, res) => {
+    try {
+        const gia = req.query.key; 
+       
+        const ketQuaTimKiem = await fruits.find({ price: { $gte: gia } });
+
+        if (ketQuaTimKiem.length > 0) {
+            res.json(ketQuaTimKiem);
+        } else {
+            res.json([]);
+        }
+    } catch (error) {
+        res.status(500).send('Lỗi máy chủ nội bộ');
+    }
+})
